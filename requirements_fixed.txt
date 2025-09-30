@@ -1,0 +1,12 @@
+tensorflow==2.10.0
+numpy==1.23.4
+scipy==1.9.3
+scikit-image==0.19.3
+tifffile==2022.10.10
+pyotf
+tqdm==4.64.1
+cupy-cuda11x==11.2.0
+einops==0.5.0
+h5py==3.7.0
+matplotlib==3.6.2
+opencv-python
