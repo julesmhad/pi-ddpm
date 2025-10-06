@@ -123,7 +123,7 @@ def add_low_frequency_noise(img_gray, freq_range):
 
 def generate_synthetic_sample(shape_img, shape_kernel, numerical_aperture, refractive_index, excitation_wavelength,
                               emission_wavelength, pinhole_size, voxel_size=-1., zres=0.1, n_balls=50, threshold=0.05,
-                              freq_range=(0.1, 0.5), focal_plane_shift=0,
+                              freq_range=(0.1, 0.5), focal_plane_shift=0, projection_type='avg',
                               dataset_type='metaballs', im_net_paths=None):
     # generate psf according to user params
 
@@ -149,19 +149,37 @@ def generate_synthetic_sample(shape_img, shape_kernel, numerical_aperture, refra
         img = cv2.imread(path)
         img = cv2.resize(img, (shape_img[1], shape_img[0]), interpolation=cv2.INTER_AREA)
         img_gray = np.expand_dims(cv2.cvtColor(img, cv2.COLOR_BGR2GRAY), axis=0) / 255.
-        # Expand to 3D
-        img_gray = np.repeat(img_gray, shape_img[2], axis=0)
-
 
     psf /= np.max(psf)
     psf_w /= np.max(psf_w)
 
-    p_img = img_gray
-    psf = shift(psf, (focal_plane_shift, 0, 0))
-    psf_w = shift(psf_w, (focal_plane_shift, 0, 0))
-    syn_sample = fftconvolve(psf, p_img, 'same')
-    syn_sample_w = fftconvolve(psf_w, p_img, 'same')
+    if projection_type == 'max':
+        p_img = np.max(img_gray, axis=0)
+        psf = shift(psf, (focal_plane_shift, 0, 0))
+        psf = np.max(psf, axis=0)
+        psf_w = shift(psf_w, (focal_plane_shift, 0, 0))
+        psf_w = np.max(psf_w, axis=0)
+        syn_sample = fftconvolve(psf, p_img, 'same')
+        syn_sample_w = fftconvolve(psf_w, p_img, 'same')
 
+    elif projection_type == 'min':
+        p_img = np.min(img_gray, axis=0)
+        psf = shift(psf, (focal_plane_shift, 0, 0))
+        psf = np.min(psf, axis=0)
+        psf_w = shift(psf_w, (focal_plane_shift, 0, 0))
+        psf_w = np.min(psf_w, axis=0)
+        syn_sample = fftconvolve(psf, p_img, 'same')
+        syn_sample_w = fftconvolve(psf_w, p_img, 'same')
+
+    elif projection_type == 'avg':
+        p_img = np.mean(img_gray, axis=0)
+
+        psf = shift(psf, (focal_plane_shift, 0, 0))
+        psf = np.mean(psf, axis=0)
+        psf_w = shift(psf_w, (focal_plane_shift, 0, 0))
+        psf_w = np.mean(psf_w, axis=0)
+        syn_sample = fftconvolve(psf, p_img, 'same')
+        syn_sample_w = fftconvolve(psf_w, p_img, 'same')
 
     # syn_sample = np.fft.fftshift(np.fft.ifftn(np.fft.fftshift(ft_sample * otf)))
 
