@@ -14,4 +14,4 @@ tensorflow==2.10.0
 tensorflow_addons==0.18.0
 tifffile==2022.8.12
 tqdm==4.64.1
-vtk==9.2.6
+
